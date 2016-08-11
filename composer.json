@@ -1,0 +1,20 @@
+{
+    "name": "cloutier/php-ipfs-api",
+    "type": "library",
+    "description": "A client library for the IPFS API",
+    "keywords": ["ipfs"],
+    "homepage": "https://github.com/cloutier/php-ipfs-api",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Vincent Cloutier",
+            "email": "vincent@cloutier.co",
+            "homepage": "http://vincent.cloutier.co",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0",
+	"ext-curl": "*"
+    }
+}
