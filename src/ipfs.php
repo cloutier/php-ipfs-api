@@ -1,8 +1,11 @@
 <?php
 /*
-	This code is licensed under the Apache license 2.0.
+	This code is licensed under the MIT license.
 	See the LICENSE file for more information.
 */
+
+namespace Cloutier/PhpIpfsApi;
+
 class IPFS {
 	private $gatewayIP;
 	private $gatewayPort;
