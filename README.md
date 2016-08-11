@@ -3,7 +3,12 @@ IPFS API wrapper library in PHP
 
 > A client library for the IPFS API.
 
-**Warning:** Changes will be made from user's suggestions and this warning will be removed when everything is stable.  
+Good news everyone! [S3r3nity](http://www.s3r3nity.com/) is sponsoring the development of this librairy.
+They will be using it inside one of their (unannounced) projects and its maintainer is hired
+to implement all the missing api calls (including the new file api) before the end of September 2016.
+
+**Warning:** Changes will be made from user's suggestions and this warning will be removed when everything is stable.
+First stable release is scheduled for the end of September 2016.
 
 # Usage
 
@@ -13,14 +18,18 @@ This library requires the cURL module:
 
 ```bash
 $ sudo apt-get install php5-curl
+$ composer require cloutier/php-ipfs-api
+$ composer install
 ```
 
 ```PHP
-include "PathToThisModuleGoesHere/ipfs.class.php";
+use Cloutier\PhpIpfsApi\IPFS;
 
 // connect to ipfs daemon API server
 $ipfs = new IPFS("localhost", "8080", "5001"); // leaving out the arguments will default to these values
 ```
+
+
 
 ## API
 
@@ -82,7 +91,7 @@ $ipfs->pinAdd($hash);
 
 The MIT License (MIT)
 
-Copyright (c) 2015-2016 Vincent Cloutier
+Copyright (c) 2015-2016 Vincent Cloutier  
 Copyright (c) 2016 S3r3nity Technologies 
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
