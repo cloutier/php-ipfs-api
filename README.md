@@ -3,7 +3,7 @@ IPFS API wrapper library in PHP
 
 > A client library for the IPFS API.
 
-Good news everyone! [S3r3nity](http://www.s3r3nity.com/) is sponsoring the development of this librairy.
+Good news everyone! [S3r3nity](http://www.s3r3nity.com/) is sponsoring the development of this library.
 They will be using it inside one of their (unannounced) projects and its maintainer is hired
 to implement all the missing api calls (including the new file api) before the end of September 2016.
 
