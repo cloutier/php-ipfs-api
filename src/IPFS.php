@@ -98,6 +98,17 @@ class IPFS {
 		return $data;
 	}
 
+	public function pinRemove ($hash) {
+		
+		$ip = $this->gatewayIP;
+		$port = $this->gatewayApiPort;
+
+		$response = $this->curl("http://$ip:$port/api/v0/pin/rm/$hash");
+		$data = json_decode($response, TRUE);
+
+		return $data;
+	}
+
 	public function version () {
 		
 		$ip = $this->gatewayIP;
