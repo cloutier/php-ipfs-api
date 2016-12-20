@@ -45,12 +45,27 @@ class IPFS {
 	}
 
 	/**
-	 * Adds a file directly to IPFS
-	 * @param string  $filepath a filepath to upload
+	 * Adds files to a folder in IPFS
+	 * 
+	 * Returns data in the form of:
+	 * {
+	 *     "files": [
+	 *         {
+	 *             "Name": "brown-square.png",
+	 *             "Hash": "Qmb3isYtDpPEAgEBCUBQMU8tqP23h2Rp99zZivWKUmuGMd"
+	 *         },
+	 *         {
+	 *             "Name": "brown-square.jpg",
+	 *             "Hash": "QmZc5W8EXWwRid2djYgG8w2MrDM7CyhHArozF5Ro8C5b8W"
+	 *         }
+	 *     ],
+	 *     "FolderHash": "QmWXmr7sxZHVQjMhY9tPgAuHYrXpxKTjW6MYfaTPVCLLgr"
+	 * }
+	 * @param multi  $filepath_or_filepaths  a single filepath or an array of filepaths to upload
 	 * @param boolean $pin      pin the file (true)
 	 * @return  array Data with Name, Hash and FolderHash
 	 */
-	public function addWithWrap ($filepath, $pin=true) {
+	public function addWithWrap ($filepath_or_filepaths, $pin=true) {
 		$ip = $this->gatewayIP;
 		$port = $this->gatewayApiPort;
 
@@ -59,10 +74,23 @@ class IPFS {
 			'w'   => 'true',
 		];
 
-		$response = $this->postFile("/api/v0/add", $filepath, $query_vars, $expect_multiple = true);
+		$responses = $this->postFile("/api/v0/add", $filepath_or_filepaths, $query_vars, $expect_multiple = true);
 
-		$return_data = $response[0];
-		$return_data['FolderHash'] = $response[1]['Hash'];
+		$return_data = [
+			'files'      => [],
+			'FolderHash' => '',
+		];
+
+		$responses_count = count($responses);
+		for ($i=0; $i < $responses_count; $i++) { 
+			if ($i === $responses_count - 1) {
+				$return_data['FolderHash'] = $responses[$i]['Hash'];
+				continue;
+			}
+
+			$return_data['files'][$i] = $responses[$i];
+		}
+
 		return $return_data;
 	}
 
@@ -134,7 +162,6 @@ class IPFS {
 
 		$query_string = $query_vars ? '?'.http_build_query($query_vars) : '';
 		$response = $this->curl("http://{$ip}:{$port}/".ltrim($api_path,'/').$query_string, $filepath);
-		echo "\$response: $response\n";
 
 		if ($expect_multiple) {
 			$data = [];
@@ -150,21 +177,26 @@ class IPFS {
 		return $data;
 	}
 
-	private function curl ($url, $filepath=null) {
+	private function curl ($url, $filepath_or_filepaths=null) {
 		$ch = curl_init();
 
 		curl_setopt($ch, CURLOPT_URL, $url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 240);
 		curl_setopt($ch, CURLOPT_HEADER, 0);
 		curl_setopt($ch, CURLOPT_BINARYTRANSFER,1);
 		 
-		if ($filepath !== null) {
-			// add the file
-			$cfile = curl_file_create($filepath, 'application/octet-stream', basename($filepath));
+		if ($filepath_or_filepaths !== null) {
+			$filepaths = $filepath_or_filepaths;
+			if (!is_array($filepaths)) { $filepaths = [$filepath_or_filepaths]; }
 
-			// post
-			$post_fields = ['file' => $cfile];
+			$post_fields = [];
+			foreach($filepaths as $offset => $filepath) {
+				// add the file
+				$cfile = curl_file_create($filepath, 'application/octet-stream', basename($filepath));
+				$post_fields['file'.sprintf('%03d', $offset + 1)] = $cfile;
+			}
+
 			curl_setopt($ch, CURLOPT_POST, 1);
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $post_fields);
 		}
