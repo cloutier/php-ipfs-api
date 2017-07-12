@@ -1,6 +1,8 @@
 IPFS API wrapper library in PHP
 ======================================
 
+![](https://ipfs.io/ipfs/QmQJ68PFMDdAsgCZvA1UVzzn18asVcf7HVvCDgpjiSCAse)
+
 > A client library for the IPFS API.
 
 Good news everyone! [S3r3nity](http://www.s3r3nity.com/) is sponsoring the development of this library.
