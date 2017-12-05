@@ -82,11 +82,21 @@ $size = $ipfs->size($hash);
 
 #### Pin
 
-Pins a hash.
+Pin or unpin a hash.
 
 **Usage**
 ```PHP
 $ipfs->pinAdd($hash);
+$ipfs->pinRm($hash);
+```
+
+#### Pin
+
+Get information about your ipfs node.
+
+**Usage**
+```PHP
+print_r($ipfs->id());
 ```
 
 # License 
