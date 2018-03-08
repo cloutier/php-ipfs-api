@@ -85,7 +85,7 @@ class IPFS {
 		$response = $this->curl("http://$ip:$port/api/v0/version");
 		$data = json_decode($response, TRUE);
 
-		return $data;
+		return $data['Version'];
 	}
 	
 	public function id () {
