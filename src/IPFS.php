@@ -52,7 +52,12 @@ class IPFS {
 		$response = $this->curl("http://$ip:$port/api/v0/object/stat/$hash");
 		$data = json_decode($response, TRUE);
 
-		return $data['CumulativeSize'];
+        if(isset($data['CumulativeSize'])){
+            return $data['CumulativeSize'];
+        }
+        else{
+            return $data['Message']."\n";
+        }
 	}
 
 	public function pinAdd ($hash) {
