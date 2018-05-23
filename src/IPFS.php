@@ -6,6 +6,8 @@
 
 namespace Cloutier\PhpIpfsApi;
 
+use Exception;
+
 class IPFS {
 	private $gatewayIP;
 	private $gatewayPort;
@@ -20,7 +22,7 @@ class IPFS {
 	public function cat ($hash) {
 		$ip = $this->gatewayIP;
 		$port = $this->gatewayPort;
-		return $this->curl("http://$ip:$port/ipfs/$hash"); 
+		return $this->curl("http://$ip:$port/ipfs/$hash");
 
 	}
 
@@ -31,7 +33,7 @@ class IPFS {
 		$req = $this->curl("http://$ip:$port/api/v0/add?stream-channels=true", $content);
 		$req = json_decode($req, TRUE);
 
-		return $req['Hash'];
+        return $req['Hash'];
 	}
 
 	public function ls ($hash) {
@@ -52,16 +54,10 @@ class IPFS {
 		$response = $this->curl("http://$ip:$port/api/v0/object/stat/$hash");
 		$data = json_decode($response, TRUE);
 
-        if(isset($data['CumulativeSize'])){
-            return $data['CumulativeSize'];
-        }
-        else{
-            return $data['Message']."\n";
-        }
+		return $data['CumulativeSize'];
 	}
 
 	public function pinAdd ($hash) {
-		
 		$ip = $this->gatewayIP;
 		$port = $this->gatewayApiPort;
 
@@ -70,65 +66,58 @@ class IPFS {
 
 		return $data;
 	}
-	
-	public function pinRm ($hash) {
-		
-		$ip = $this->gatewayIP;
-		$port = $this->gatewayApiPort;
 
-		$response = $this->curl("http://$ip:$port/api/v0/pin/rm/$hash");
-		$data = json_decode($response, TRUE);
+    public function version () {
+        $ip = $this->gatewayIP;
+        $port = $this->gatewayApiPort;
+        $response = $this->curl("http://$ip:$port/api/v0/version");
+        $data = json_decode($response, TRUE);
+        return $data["Version"];
+    }
 
-		return $data;
-	}
-	
-	public function version () {
-		
-		$ip = $this->gatewayIP;
-		$port = $this->gatewayApiPort;
-
-		$response = $this->curl("http://$ip:$port/api/v0/version");
-		$data = json_decode($response, TRUE);
-
-		return $data['Version'];
-	}
-	
-	public function id () {
-		
-		$ip = $this->gatewayIP;
-		$port = $this->gatewayApiPort;
-
-		$response = $this->curl("http://$ip:$port/api/v0/id");
-		$data = json_decode($response, TRUE);
-
-		return $data;
-	}
-
-	private function curl ($url, $data = "") {
-		$ch = curl_init();
+    private function curl ($url, $filepath=null) {
+        $ch = curl_init();
 
 		curl_setopt($ch, CURLOPT_URL, $url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_TIMEOUT, 5);
 		curl_setopt($ch, CURLOPT_HEADER, 0);
 		curl_setopt($ch, CURLOPT_BINARYTRANSFER,1);
-		 
-		if ($data != "") {
-			curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: multipart/form-data; boundary=a831rwxi1a3gzaorw1w2z49dlsor')); 
+
+		if ($filepath !== null) {
+			// add the file
+			$cfile = curl_file_create($filepath, 'application/octet-stream', basename($filepath));
+
+			// post
+			$post_fields = ['file' => $cfile];
 			curl_setopt($ch, CURLOPT_POST, 1);
-			curl_setopt($ch, CURLOPT_POSTFIELDS, "--a831rwxi1a3gzaorw1w2z49dlsor\r\nContent-Type: application/octet-stream\r\nContent-Disposition: file; \r\n\r\n" . $data . "\r\n--a831rwxi1a3gzaorw1w2z49dlsor");
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $post_fields);
 		}
 
 		$output = curl_exec($ch);
 
-		if ($output == FALSE) {
-			//todo: when ipfs doesn't answer
-		}		 
+		// check HTTP response code
+		$response_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		$code_category = substr($response_code, 0, 1);
+		if ($code_category == '5' OR $code_category == '4') {
+			$data = @json_decode($output, true);
+			if (!$data AND json_last_error() != JSON_ERROR_NONE) {
+				throw new Exception("IPFS returned response code $response_code: ".substr($output, 0, 200), $response_code);
+			}
+			if (is_array($data)) {
+				if (isset($data['Code']) AND isset($data['Message'])) {
+					throw new Exception("IPFS Error {$data['Code']}: {$data['Message']}", $response_code);
+				}
+			}
+		}
+
+		// handle empty response
+		if ($output === false) {
+			throw new Exception("IPFS Error: No Response", 1);
+		}
+
 		curl_close($ch);
- 
 
 		return $output;
 	}
 }
-
-
